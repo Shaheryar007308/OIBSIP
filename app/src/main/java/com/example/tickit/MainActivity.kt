@@ -12,6 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.tickit.navigation.NavGraph
 import com.example.tickit.ui.screens.ToDoScreen
 import com.example.tickit.ui.theme.TickItTheme
 import com.example.tickit.viewmodel.TaskViewModel
@@ -29,9 +30,10 @@ class MainActivity : ComponentActivity() {
         setContent {
             TickItTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    ToDoScreen(
-                        viewmodel = viewmodel
-                    )
+//                    ToDoScreen(
+//                        viewmodel = viewmodel
+//                    )
+                    NavGraph(viewmodel)
                 }
             }
         }
