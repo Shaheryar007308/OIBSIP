@@ -47,7 +47,7 @@ fun ItemCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (item.isDone) grey else Color.White
+            containerColor = if (item.isDone) Color.Transparent else Color.White
         ),
         border = BorderStroke(1.dp, grey)
 
@@ -73,7 +73,10 @@ fun ItemCard(
 
             Text(
                 text = item.name,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f)
+                    .animateContentSize()
+                    .clickable { isExpand = !isExpand },
                 fontWeight = FontWeight.Medium,
                 color = if (item.isDone) grey else Dark,
                 textDecoration = if (item.isDone) TextDecoration.LineThrough else null
