@@ -9,5 +9,6 @@ data class TaskItem(
     @PrimaryKey(autoGenerate = true)
     var id : Int = 0,
     var name : String ,
-    var isDone : Boolean =false
+    var isDone : Boolean =false,
+    var category : String
 )

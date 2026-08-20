@@ -110,11 +110,11 @@ fun ToDoScreen(viewmodel: TaskViewModel) {
     if (showdailouge) {
         BottomSheet(
             task = tasktoedit,
-            onSave = { name ->
+            onSave = { name , cat ->
                 if (tasktoedit == null) {
-                    viewmodel.addTask(TaskItem(name = name, isDone = false))
+                    viewmodel.addTask(TaskItem(name = name, category = cat, isDone = false))
                 } else {
-                    tasktoedit?.let { viewmodel.update(it.copy(name = name)) }
+                    tasktoedit?.let { viewmodel.update(it.copy(name = name , category = cat)) }
                 }
                 showdailouge = false
                 tasktoedit = null
