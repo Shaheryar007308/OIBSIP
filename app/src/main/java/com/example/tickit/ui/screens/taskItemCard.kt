@@ -79,7 +79,9 @@ fun ItemCard(
                     .clickable { isExpand = !isExpand },
                 fontWeight = FontWeight.Medium,
                 color = if (item.isDone) grey else Dark,
-                textDecoration = if (item.isDone) TextDecoration.LineThrough else null
+                textDecoration = if (item.isDone) TextDecoration.LineThrough else null,
+                maxLines = if (isExpand) Int.MAX_VALUE else 1,
+                overflow = TextOverflow.Ellipsis
             )
 
 
