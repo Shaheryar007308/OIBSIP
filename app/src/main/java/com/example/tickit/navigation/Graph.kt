@@ -8,6 +8,7 @@ import com.example.tickit.ui.screens.Login
 import com.example.tickit.ui.screens.SIGNIN
 import com.example.tickit.ui.screens.ToDoScreen
 import com.example.tickit.viewmodel.TaskViewModel
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun NavGraph(viewModel: TaskViewModel){
@@ -15,9 +16,14 @@ fun NavGraph(viewModel: TaskViewModel){
 
 
     var navCont =  rememberNavController()
+    val user = FirebaseAuth.getInstance().currentUser
     NavHost(
         navController = navCont,
-        startDestination = Routes.LOGIN
+        startDestination = if(user!= null && user.isEmailVerified){
+            Routes.MAIN
+        } else{
+            Routes.LOGIN
+        }
     ){
         composable<Routes.LOGIN> {
             Login(navCont)
@@ -29,7 +35,7 @@ fun NavGraph(viewModel: TaskViewModel){
 
         composable<Routes.MAIN> {
             ToDoScreen(
-                viewmodel = viewModel
+                viewmodel = viewModel , navCont
             )
         }
     }

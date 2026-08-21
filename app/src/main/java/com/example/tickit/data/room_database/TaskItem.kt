@@ -10,5 +10,6 @@ data class TaskItem(
     var id : Int = 0,
     var name : String ,
     var isDone : Boolean =false,
-    var category : String
+    var category : String,
+    val userId: String
 )

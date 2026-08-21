@@ -1,6 +1,7 @@
 package com.example.tickit.ui.screens
 
 import android.annotation.SuppressLint
+import android.util.Patterns
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -48,6 +49,7 @@ import com.example.tickit.R
 import com.example.tickit.navigation.Routes
 import com.example.tickit.ui.theme.Dark
 import com.example.tickit.ui.theme.grey
+import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -59,6 +61,13 @@ fun Login(navCont: NavHostController) {
     var mail by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var shown by remember { mutableStateOf(false) }
+
+    var auth = remember { FirebaseAuth.getInstance() }
+    var loginError by remember {mutableStateOf("")}
+    var isLoading by remember { mutableStateOf(false) }
+
+    var emailError = mail.isNotBlank() &&
+            !Patterns.EMAIL_ADDRESS.matcher(mail).matches()
 
     Scaffold(
 
@@ -121,7 +130,13 @@ fun Login(navCont: NavHostController) {
                         unfocusedBorderColor = grey,
                         focusedTextColor = grey
                     ),
-                    placeholder = { Text(text = "Email Address") }
+                    placeholder = { Text(text = "Email Address") },
+                    isError = emailError,
+                    supportingText = {
+                        if (emailError){
+                            Text(text="Enter a valid email address")
+                        }
+                    }
                 )
 
 
@@ -158,12 +173,47 @@ fun Login(navCont: NavHostController) {
 
                 Button(
                     onClick = {
-                        navCont.navigate(Routes.MAIN) {
-                            popUpTo(Routes.LOGIN) {
-                                inclusive = true
-                            }
-                            launchSingleTop = true
+
+                        var clean = mail.trim()
+
+                        loginError = when {
+                            !Patterns.EMAIL_ADDRESS.matcher(clean).matches() -> "Enter valid email address"
+                            password.isBlank() -> "Enter your password"
+                            else ->""
                         }
+
+                        if (loginError.isNotBlank())return@Button
+
+                        isLoading = true
+
+                        auth.signInWithEmailAndPassword(clean , password).addOnCompleteListener { log->
+
+                            isLoading = false
+                            if (log.isSuccessful){
+                                var user = auth.currentUser
+
+                               if (user?.isEmailVerified == false){
+                                   loginError = "Please verify your email before logging"
+                                   auth.signOut()
+                                   return@addOnCompleteListener
+                               }
+
+                                navCont.navigate(Routes.MAIN) {
+                                    popUpTo(Routes.LOGIN) {
+                                        inclusive = true
+                                    }
+                                    launchSingleTop = true
+                                }
+
+                            }
+
+                            else{
+                                loginError = "Incorrect email or password"
+                            }
+                        }
+
+
+
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -177,9 +227,17 @@ fun Login(navCont: NavHostController) {
                             password.isNotBlank()
                 ) {
                     Text(
-                        text = "Login",
+                        text = if (isLoading) "Logging in..." else "Login",
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 18.sp
+                    )
+                }
+
+                if (loginError.isNotBlank()) {
+                    Text(
+                        text = loginError,
+                        color = Color.Red,
+                        modifier = Modifier.padding(horizontal = 14.dp)
                     )
                 }
 

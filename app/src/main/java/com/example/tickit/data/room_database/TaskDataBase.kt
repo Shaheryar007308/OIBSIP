@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
-@Database(entities = [TaskItem::class], version = 2)
+@Database(entities = [TaskItem::class], version = 3)
 abstract class TaskDataBase : RoomDatabase() {
 
     abstract fun taskDao(): TaskDao
@@ -26,13 +26,21 @@ abstract class TaskDataBase : RoomDatabase() {
             }
         }
 
+        private val migration2_3 = object : Migration(2,3){
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "ALTER TABLE Tasks ADD COLUMN userId TEXT NOT NULL DEFAULT '' "
+                )
+            }
+        }
+
         fun getdb(context: Context): TaskDataBase {
             return Instance ?: synchronized(this) {
                 Room.databaseBuilder(
                     context.applicationContext,
                     TaskDataBase::class.java ,
                     "tasks_database"
-                ).addMigrations(migration1_2).build().also { Instance = it }
+                ).addMigrations(migration1_2 , migration2_3).build().also { Instance = it }
             }
         }
     }

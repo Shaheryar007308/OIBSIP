@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.tickit.data.room_database.TaskDataBase
 import com.example.tickit.data.room_database.TaskItem
 import com.example.tickit.repository.TaskRepository
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -16,11 +17,11 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
     private var dao = TaskDataBase.getdb(application).taskDao()
     private var repo = TaskRepository(dao)
 
-    var alltask: StateFlow<List<TaskItem>> = repo.getall()
-        .stateIn(viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
-            emptyList()
-        )
+
+
+    fun alltask(userId: String): Flow<List<TaskItem>> {
+        return repo.getall(userId)
+    }
 
     fun addTask(task: TaskItem){
         viewModelScope.launch {

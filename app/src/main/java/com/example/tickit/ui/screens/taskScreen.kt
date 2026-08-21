@@ -1,17 +1,19 @@
 package com.example.tickit.ui.screens
 
-import android.widget.Space
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -26,17 +28,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import com.example.tickit.data.room_database.TaskItem
+import com.example.tickit.navigation.Routes
 import com.example.tickit.ui.theme.Dark
 import com.example.tickit.ui.theme.grey
 import com.example.tickit.ui.widjets.BottomSheet
 import com.example.tickit.ui.widjets.FloatButton
 import com.example.tickit.viewmodel.TaskViewModel
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
-fun ToDoScreen(viewmodel: TaskViewModel) {
+fun ToDoScreen(viewmodel: TaskViewModel, navCont: NavHostController) {
 
-    val view by viewmodel.alltask.collectAsState()
+    var currentId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+
+
+
+    val tasks by viewmodel.alltask(currentId).collectAsState(initial = emptyList())
+
     var tasktoedit by remember { mutableStateOf<TaskItem?>(null) }
 
     var showdailouge by remember { mutableStateOf(false) }
@@ -46,6 +56,31 @@ fun ToDoScreen(viewmodel: TaskViewModel) {
     Scaffold(
         floatingActionButton = {
             FloatButton(onClick = { showdailouge = true })
+        },
+        bottomBar = {
+            val auth = FirebaseAuth.getInstance()
+
+            Button(
+                onClick = {
+                    auth.signOut()
+
+                    navCont.navigate(Routes.LOGIN) {
+                        popUpTo(navCont.graph.id) {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Dark
+                ),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text("Logout")
+            }
         }
     ) { innerpadding ->
 
@@ -64,9 +99,9 @@ fun ToDoScreen(viewmodel: TaskViewModel) {
             )
             Spacer(modifier = Modifier.height(15.dp))
 
-            Text(text = "${view.filter { !it.isDone }.size} tasks remaining ", color = grey)
+            Text(text = "${tasks.filter { !it.isDone }.size} tasks remaining ", color = grey)
             Spacer(modifier = Modifier.height(15.dp))
-            if (view.isEmpty()) {
+            if (tasks.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(
                         text = "No Tasks",
@@ -81,7 +116,7 @@ fun ToDoScreen(viewmodel: TaskViewModel) {
                     contentPadding = PaddingValues(bottom = 80.dp)
                 ) {
                     items(
-                        items = view,
+                        items = tasks,
                         key = { it.id }
                     ) { task ->
 
@@ -112,9 +147,9 @@ fun ToDoScreen(viewmodel: TaskViewModel) {
             task = tasktoedit,
             onSave = { name , cat ->
                 if (tasktoedit == null) {
-                    viewmodel.addTask(TaskItem(name = name, category = cat, isDone = false))
+                    viewmodel.addTask(TaskItem(name = name, category = cat, isDone = false , userId = currentId))
                 } else {
-                    tasktoedit?.let { viewmodel.update(it.copy(name = name , category = cat)) }
+                    tasktoedit?.let { viewmodel.update(it.copy(name = name , category = cat , userId = currentId)) }
                 }
                 showdailouge = false
                 tasktoedit = null

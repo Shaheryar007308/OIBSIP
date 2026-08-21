@@ -1,6 +1,8 @@
 package com.example.tickit.ui.screens
 
 import android.annotation.SuppressLint
+import android.util.Patterns
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -35,6 +37,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -43,9 +46,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.tickit.authentication.authManager
 import com.example.tickit.navigation.Routes
 import com.example.tickit.ui.theme.Dark
 import com.example.tickit.ui.theme.grey
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.UserProfileChangeRequest
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -61,6 +67,17 @@ fun SIGNIN(navCont: NavHostController) {
 
     var shown by remember { mutableStateOf(false) }
     var cshown by remember { mutableStateOf(false) }
+
+    var auth = remember { FirebaseAuth.getInstance() }
+
+    var context = LocalContext.current
+
+    var signUpError by remember { mutableStateOf("") }
+
+    var isLoading by remember { mutableStateOf(false) }
+
+    val emailError = mail.isNotBlank() &&
+            !Patterns.EMAIL_ADDRESS.matcher(mail.trim()).matches()
 
     Scaffold(
         topBar = {
@@ -132,14 +149,23 @@ fun SIGNIN(navCont: NavHostController) {
                         .padding(14.dp)
                         .fillMaxWidth(),
                     value = mail,
-                    onValueChange = { mail = it },
+                    onValueChange = {
+                        mail = it
+                        signUpError = " "
+                    },
                     shape = RoundedCornerShape(10.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Dark,
                         unfocusedBorderColor = grey,
                         focusedTextColor = grey
                     ),
-                    placeholder = { Text(text = "Email Address") }
+                    placeholder = { Text(text = "Email Address") },
+                    isError = emailError,
+                    supportingText = {
+                        if (emailError) {
+                            Text(text = "Enter a valid email address, for example: name@gmail.com")
+                        }
+                    }
                 )
 
 
@@ -211,12 +237,61 @@ fun SIGNIN(navCont: NavHostController) {
 
                 Button(
                     onClick = {
-                        navCont.navigate(Routes.MAIN) {
-                            popUpTo(Routes.LOGIN) {
-                                inclusive = true
-                            }
-                            launchSingleTop = true
+
+                        var clean = mail.trim()
+
+                        signUpError = when {
+                            name.isBlank() -> "Please Enter your name"
+                            !Patterns.EMAIL_ADDRESS.matcher(clean)
+                                .matches() -> "Enter a valid email address"
+
+                            password.length < 6 -> "Make sure passward must greater than six characters"
+                            password != cpassword -> "Password anc confrim password not match with each other "
+                            else -> ""
                         }
+
+                        if (signUpError.isNotBlank()) return@Button
+
+                        isLoading = true
+
+                        auth.createUserWithEmailAndPassword(clean, password)
+                            .addOnCompleteListener { sign ->
+
+                                isLoading = false
+
+                                if (sign.isSuccessful) {
+                                    var user = auth.currentUser
+
+                                    val profile =
+                                        UserProfileChangeRequest.Builder().setDisplayName(name)
+                                            .build()
+
+                                    user?.updateProfile(profile)
+
+                                    user?.sendEmailVerification()
+
+                                    Toast.makeText(
+                                        context,
+                                        "Account created. Please verify your email, then log in.",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+
+                                    auth.signOut()
+
+                                    navCont.navigate(Routes.LOGIN) {
+                                        popUpTo(Routes.SIGNING) {
+                                            inclusive = true
+                                        }
+                                        launchSingleTop = true
+                                    }
+                                } else {
+                                    signUpError = sign.exception?.message
+                                        ?: "Could not create account. Try again."
+                                }
+
+                            }
+
+
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -226,17 +301,21 @@ fun SIGNIN(navCont: NavHostController) {
                         containerColor = Dark
                     ),
                     shape = RoundedCornerShape(12.dp),
-                    enabled = name.isNotBlank() &&
-                            mail.isNotBlank() &&
-                            password.isNotBlank() &&
-                            cpassword.isNotBlank() &&
-                            password == cpassword
+                    enabled = !isLoading
 
                 ) {
                     Text(
-                        text = "Create Account",
+                        text = if (isLoading) "Creating Account ...." else "Create Account",
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 18.sp
+                    )
+                }
+
+                if (signUpError.isNotBlank()) {
+                    Text(
+                        text = signUpError,
+                        color = Color.Red,
+                        modifier = Modifier.padding(horizontal = 14.dp)
                     )
                 }
 

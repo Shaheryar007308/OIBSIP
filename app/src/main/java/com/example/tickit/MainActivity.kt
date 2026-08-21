@@ -6,14 +6,9 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import com.example.tickit.navigation.NavGraph
-import com.example.tickit.ui.screens.ToDoScreen
 import com.example.tickit.ui.theme.TickItTheme
 import com.example.tickit.viewmodel.TaskViewModel
 import com.example.tickit.viewmodel.TaskViewmodelFactory
@@ -34,6 +29,7 @@ class MainActivity : ComponentActivity() {
 //                        viewmodel = viewmodel
 //                    )
                     NavGraph(viewmodel)
+
                 }
             }
         }
