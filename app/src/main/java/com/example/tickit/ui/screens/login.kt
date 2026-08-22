@@ -57,13 +57,13 @@ import com.google.firebase.auth.FirebaseAuth
 @Composable
 fun Login(navCont: NavHostController) {
 
-    
+
     var mail by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var shown by remember { mutableStateOf(false) }
 
     var auth = remember { FirebaseAuth.getInstance() }
-    var loginError by remember {mutableStateOf("")}
+    var loginError by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
 
     var emailError = mail.isNotBlank() &&
@@ -133,8 +133,8 @@ fun Login(navCont: NavHostController) {
                     placeholder = { Text(text = "Email Address") },
                     isError = emailError,
                     supportingText = {
-                        if (emailError){
-                            Text(text="Enter a valid email address")
+                        if (emailError) {
+                            Text(text = "Enter a valid email address")
                         }
                     }
                 )
@@ -177,41 +177,41 @@ fun Login(navCont: NavHostController) {
                         var clean = mail.trim()
 
                         loginError = when {
-                            !Patterns.EMAIL_ADDRESS.matcher(clean).matches() -> "Enter valid email address"
+                            !Patterns.EMAIL_ADDRESS.matcher(clean)
+                                .matches() -> "Enter valid email address"
+
                             password.isBlank() -> "Enter your password"
-                            else ->""
+                            else -> ""
                         }
 
-                        if (loginError.isNotBlank())return@Button
+                        if (loginError.isNotBlank()) return@Button
 
                         isLoading = true
 
-                        auth.signInWithEmailAndPassword(clean , password).addOnCompleteListener { log->
+                        auth.signInWithEmailAndPassword(clean, password)
+                            .addOnCompleteListener { log ->
 
-                            isLoading = false
-                            if (log.isSuccessful){
-                                var user = auth.currentUser
+                                isLoading = false
+                                if (log.isSuccessful) {
+                                    var user = auth.currentUser
 
-                               if (user?.isEmailVerified == false){
-                                   loginError = "Please verify your email before logging"
-                                   auth.signOut()
-                                   return@addOnCompleteListener
-                               }
-
-                                navCont.navigate(Routes.MAIN) {
-                                    popUpTo(Routes.LOGIN) {
-                                        inclusive = true
+                                    if (user?.isEmailVerified == false) {
+                                        loginError = "Please verify your email before logging"
+                                        auth.signOut()
+                                        return@addOnCompleteListener
                                     }
-                                    launchSingleTop = true
+
+                                    navCont.navigate(Routes.MAIN) {
+                                        popUpTo(Routes.LOGIN) {
+                                            inclusive = true
+                                        }
+                                        launchSingleTop = true
+                                    }
+
+                                } else {
+                                    loginError = "Incorrect email or password"
                                 }
-
                             }
-
-                            else{
-                                loginError = "Incorrect email or password"
-                            }
-                        }
-
 
 
                     },
@@ -247,7 +247,7 @@ fun Login(navCont: NavHostController) {
                     horizontalArrangement = Arrangement.Center
                 ) {
                     Text(text = "Don't have an account?")
-                    TextButton(onClick = {navCont.navigate(Routes.SIGNING)}) {
+                    TextButton(onClick = { navCont.navigate(Routes.SIGNING) }) {
                         Text(text = "Sign Up")
                     }
                 }

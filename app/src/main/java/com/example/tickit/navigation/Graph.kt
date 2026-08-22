@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.tickit.authentication.authManager
 import com.example.tickit.ui.screens.Login
 import com.example.tickit.ui.screens.SIGNIN
 import com.example.tickit.ui.screens.ToDoScreen
@@ -13,13 +14,13 @@ import com.google.firebase.auth.FirebaseAuth
 @Composable
 fun NavGraph(viewModel: TaskViewModel){
 
-
-
+    var fireInstance = authManager()
     var navCont =  rememberNavController()
-    val user = FirebaseAuth.getInstance().currentUser
+    val cuser = fireInstance.currentUser()
+    val log = fireInstance.isLogged()
     NavHost(
         navController = navCont,
-        startDestination = if(user!= null && user.isEmailVerified){
+        startDestination = if(log && cuser?.isEmailVerified == true){
             Routes.MAIN
         } else{
             Routes.LOGIN
