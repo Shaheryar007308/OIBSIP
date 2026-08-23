@@ -1,6 +1,6 @@
 # Ticklt — To-Do App
 
-Ticklt is a simple and modern Android To-Do application built with **Kotlin** and **Jetpack Compose**. It lets users create, view, edit, and delete tasks, with all tasks stored locally using the Room Database.
+Ticklt is a simple and modern Android To-Do application built with **Kotlin** and **Jetpack Compose**. It lets users create, view, edit, and delete tasks, with all tasks stored locally using the Room Database also add Firebase Authentication where user can use their email to register themselve and then login using their registered email.
 
 ## Features
 
@@ -9,6 +9,7 @@ Ticklt is a simple and modern Android To-Do application built with **Kotlin** an
 - Edit existing tasks
 - Delete tasks
 - Persistent local storage with Room Database
+- Firebase Authentication
 - Add and edit tasks using a Bottom Sheet
 - Clean Jetpack Compose user interface
 - MVVM architecture for organized and maintainable code
