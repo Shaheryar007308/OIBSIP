@@ -40,7 +40,7 @@ import com.example.stopwatch.ui.theme.timerText
 import com.example.viewmodel.stopwatchViewModel
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@Preview(showBackground = true, showSystemUi = true)
+
 @Composable
 fun StopWatch(view : stopwatchViewModel) {
 
